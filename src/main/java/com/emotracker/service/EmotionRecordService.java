@@ -7,6 +7,7 @@ import com.emotracker.domain.EmotionType;
 import com.emotracker.domain.User;
 import com.emotracker.dto.EmotionRecordRequestDto;
 import com.emotracker.dto.EmotionRecordResponseDto;
+import com.emotracker.dto.EmotionResponseDto;
 import com.emotracker.repository.EmotionRecordRepository;
 import com.emotracker.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -57,4 +58,12 @@ public class EmotionRecordService {
                 .map(EmotionRecordResponseDto::new)
                 .collect(Collectors.toList());
     }
+
+    // 날짜 범위에 해당하는 감정 기록을 가져오는 메서드
+    public List<EmotionRecord> getEmotionRecordsByDateRange(LocalDate startDate, LocalDate endDate) {
+        return emotionRecordRepository.findByDateBetween(startDate, endDate);
+    }
+
+
+
 }

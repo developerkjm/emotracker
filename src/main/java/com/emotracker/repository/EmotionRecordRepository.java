@@ -19,4 +19,8 @@ public interface EmotionRecordRepository extends JpaRepository<EmotionRecord, Lo
 
     // 사용자 기준 조회
     List<EmotionRecord> findAllByUser(User user);
+
+    // 날짜 범위에 해당하는 감정 기록 조회 (추가된 메서드)
+    List<EmotionRecord> findByDateBetween(LocalDate startDate, LocalDate endDate);
+
 }
