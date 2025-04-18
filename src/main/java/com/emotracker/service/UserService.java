@@ -50,6 +50,7 @@ public class UserService {
                 .password(encodedPassword)
                 .username(dto.getUsername())
                 .nickname(dto.getNickname())
+                .role("USER")           // 기본 권한 USER
                 .build();
 
         User savedUser = userRepository.save(user);

@@ -41,4 +41,9 @@ public class User {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    public boolean isAdmin() {
+        return "ADMIN".equalsIgnoreCase(this.role);
+    }
+
 }
