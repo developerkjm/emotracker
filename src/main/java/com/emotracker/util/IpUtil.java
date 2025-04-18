@@ -7,7 +7,7 @@ public class IpUtil {
 
     public static String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty()) {
+        if (ip == null || ip.isBlank()) {
             ip = request.getRemoteAddr();
         }
         return ip;

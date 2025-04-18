@@ -25,5 +25,8 @@ public class Post {
 
     private LocalDateTime createdAt;
 
+    private String fileName; // 첨부파일 이름
+
+
     // 생성자 등 생략
 }

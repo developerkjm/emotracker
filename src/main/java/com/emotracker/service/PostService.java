@@ -14,12 +14,13 @@ public class PostService {
 
     private final PostRepository postRepository;
 
-    public PostResponseDto createPost(PostRequestDto dto, String ipAddress) {
+    public PostResponseDto createPost(PostRequestDto dto, String ipAddress, String fileName) {
         Post post = new Post();
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
         post.setAuthor(dto.getWriter());
         post.setIpAddress(ipAddress); // IP 저장
+        post.setFileName(fileName);
 
         Post saved = postRepository.save(post);
         return new PostResponseDto(saved); // 응답 DTO로 변환
