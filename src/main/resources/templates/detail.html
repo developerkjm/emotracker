@@ -21,5 +21,186 @@
 </div>
 
 <a href="/"><button>목록으로</button></a>
+
+<!-- 댓글 영역 -->
+<h3>💬 댓글</h3>
+<div id="commentSection"></div>
+
+<h4>✏️ 댓글 작성</h4>
+<textarea id="newCommentContent" rows="3" cols="60" placeholder="내용을 입력하세요"></textarea><br>
+<input type="text" id="newCommentWriter" placeholder="작성자"><br>
+<button onclick="submitNewComment()">등록</button>
+<hr>
+
+<script th:inline="javascript">
+    const postId = [[${post.id}]];/* 게시글 id를 여기서 가져와야 함 (예: URL 파싱) */;
+    console.log('postId?? ' + postId);
+    const userIsAdmin = false; // 나중에 로그인 시스템 연동되면 바꿔야 함
+
+    // 댓글 불러오기
+    async function loadComments() {
+      const response = await fetch(`/api/comments?postId=${postId}`);
+      const comments = await response.json();
+
+      const container = document.getElementById('commentSection');
+      container.innerHTML = ''; // 초기화
+
+      // 댓글 트리 구조로 구성
+      const commentMap = {};
+      comments.forEach(c => {
+        commentMap[c.id] = { ...c, children: [] };
+      });
+      const rootComments = [];
+
+      comments.forEach(c => {
+        if (c.parentId) {
+          commentMap[c.parentId].children.push(commentMap[c.id]);
+        } else {
+          rootComments.push(commentMap[c.id]);
+        }
+      });
+
+      rootComments.forEach(c => renderComment(c, container));
+    }
+
+    // 댓글 렌더링 함수
+    function renderComment(comment, container, depth = 0) {
+      const div = document.createElement('div');
+      div.style.marginLeft = `${depth * 20}px`; // 들여쓰기
+
+      // const ipDisplay = userIsAdmin ? comment.ip : comment.ip.replace(/\.\d+$/, '.xxx');
+      const ipDisplay = userIsAdmin  ? comment.ip || 'unknown'  : (comment.ip ? comment.ip.replace(/\.\d+$/, '.xxx') : 'unknown');
+
+
+      div.innerHTML = `
+        <div style="border-bottom:1px solid #ccc; padding:5px 0;">
+          <strong>${comment.writer}</strong> (${ipDisplay}) - ${new Date(comment.createdAt).toLocaleString()}<br>
+          <span id="comment-content-${comment.id}">${comment.content}</span>
+          <button onclick="showReplyForm(${comment.id})">답글</button>
+          <button onclick="showEditForm(${comment.id}, '${comment.content.replace(/'/g, "\\'")}')">수정</button>
+          <button onclick="deleteComment(${comment.id})">삭제</button>
+          <div id="replyForm-${comment.id}"></div>
+          <div id="editForm-${comment.id}"></div>
+        </div>
+
+
+      `;
+
+      container.appendChild(div);
+
+      comment.children.forEach(child => renderComment(child, container, depth + 1));
+    }
+
+    // 대댓글 입력 폼 표시
+    function showReplyForm(parentId) {
+      const replyDiv = document.getElementById(`replyForm-${parentId}`);
+      replyDiv.innerHTML = `
+        <textarea id="replyContent-${parentId}" rows="2" cols="50"></textarea><br>
+        <input type="text" id="replyWriter-${parentId}" placeholder="작성자"/><br>
+        <button onclick="submitReply(${parentId})">등록</button>
+      `;
+    }
+
+    // 대댓글 전송
+    async function submitReply(parentId) {
+      const content = document.getElementById(`replyContent-${parentId}`).value;
+      const writer = document.getElementById(`replyWriter-${parentId}`).value;
+
+      await fetch('/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          postId: postId,
+          content: content,
+          writer: writer,
+          parentId: parentId
+        })
+      });
+
+      loadComments(); // 다시 불러오기
+    }
+
+    // 최상위 댓글 전송
+    async function submitNewComment() {
+        const content = document.getElementById("newCommentContent").value;
+        const writer = document.getElementById("newCommentWriter").value;
+
+        if (!content.trim() || !writer.trim()) {
+          alert("작성자와 내용을 모두 입력해주세요!");
+          return;
+        }
+
+        await fetch('/api/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postId: postId,
+            content: content,
+            writer: writer,
+            parentId: null
+          })
+        });
+
+        // 입력값 초기화
+        document.getElementById("newCommentContent").value = '';
+        document.getElementById("newCommentWriter").value = '';
+
+        // 댓글 목록 다시 불러오기
+        loadComments();
+    }
+
+    function showEditForm(commentId, originalContent) {
+      const editDiv = document.getElementById(`editForm-${commentId}`);
+      editDiv.innerHTML = `
+        <textarea id="editContent-${commentId}" rows="2" cols="50">${originalContent}</textarea><br>
+        <button onclick="submitEdit(${commentId})">저장</button>
+        <button onclick="cancelEdit(${commentId})">취소</button>
+      `;
+    }
+
+    async function submitEdit(commentId) {
+      const newContent = document.getElementById(`editContent-${commentId}`).value;
+
+      if (!newContent.trim()) {
+        alert("내용을 입력해주세요!");
+        return;
+      }
+
+      await fetch(`/api/comments/${commentId}`, {
+        method: 'PUT', // or PATCH
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: newContent })
+      });
+
+      loadComments(); // 목록 다시 불러오기
+    }
+
+    function cancelEdit(commentId) {
+      const editDiv = document.getElementById(`editForm-${commentId}`);
+      editDiv.innerHTML = '';
+    }
+
+    async function deleteComment(commentId) {
+      if (!confirm("정말 삭제하시겠습니까?")) return;
+
+      await fetch(`/api/comments/${commentId}`, {
+        method: 'DELETE'
+      });
+
+      loadComments();
+    }
+
+
+
+
+
+
+
+    // 페이지 로딩 시 실행
+    window.onload = loadComments;
+</script>
+
 </body>
+
+
 </html>

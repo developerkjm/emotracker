@@ -5,6 +5,7 @@ import com.emotracker.dto.CommentResponseDto;
 import com.emotracker.service.CommentService;
 import com.emotracker.util.IpUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,4 +32,18 @@ public class CommentController {
                                                 @RequestParam(required = false, defaultValue = "false") boolean isAdmin) {
         return commentService.getCommentsByPost(postId, isAdmin);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateComment(@PathVariable Long id, @RequestBody CommentRequestDto dto) {
+        commentService.update(id, dto);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
+        commentService.delete(id);
+        return ResponseEntity.ok().build();
+    }
+
+
 }

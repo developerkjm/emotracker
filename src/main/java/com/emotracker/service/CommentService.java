@@ -7,6 +7,7 @@ import com.emotracker.dto.CommentResponseDto;
 import com.emotracker.repository.CommentRepository;
 import com.emotracker.repository.PostRepository;
 import com.emotracker.util.IpUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -55,4 +56,21 @@ public class CommentService {
                 .map(c -> new CommentResponseDto(c, isAdmin))
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void update(Long id, CommentRequestDto dto) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다: " + id));
+
+        comment.setContent(dto.getContent());  // 내용 수정
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다: " + id));
+        commentRepository.delete(comment);
+    }
+
+
 }
