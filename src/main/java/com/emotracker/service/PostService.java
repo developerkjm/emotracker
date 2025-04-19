@@ -8,6 +8,9 @@ import com.emotracker.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -32,6 +35,43 @@ public class PostService {
 
             return new PostResponseDto(post); // 마스킹된 DTO
     }
+
+    /*
+    public List<PostResponseDto> getAllPosts() {
+        return postRepository.findAll().stream()
+                .map(post -> new PostResponseDto(
+                        post.getId(),
+                        post.getTitle(),
+                        post.getContent(),
+                        post.getAuthor(),
+                        post.getFileName(),
+                        post.getIpAddress()
+                ))
+                .collect(Collectors.toList());
+    }
+     */
+
+    public PostResponseDto getPostById(Long id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다. ID: " + id));
+
+        return new PostResponseDto(
+                post.getId(),
+                post.getTitle(),
+                post.getContent(),
+                post.getAuthor(),
+                post.getFileName(),
+                post.getIpAddress(),
+                post.getCreatedAt()
+        );
+    }
+
+    public List<Post> getAllPosts() {
+        System.out.println("포스트 서비스!!!");
+        return postRepository.findAllByOrderByIdDesc(); // 최신글 위로
+    }
+
+
 }
 
 

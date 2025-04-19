@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 상세보기</title>
+</head>
+<body>
+<h1>📄 게시글 상세</h1>
+
+<p><strong>제목:</strong> <span th:text="${post.title}"></span></p>
+<p><strong>내용:</strong> <span th:text="${post.content}"></span></p>
+<p><strong>작성자:</strong> <span th:text="${post.writer}"></span></p>
+<p><strong>작성일:</strong> <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+<p><strong>IP:</strong> <span th:text="${post.ipAddress}"></span></p>
+
+<div th:if="${post.fileName != null}">
+    <p><strong>첨부파일:</strong> <a th:href="@{'/uploads/' + ${post.fileName}}" th:text="${post.fileName}"></a></p>
+    -> 실제 서버 주서를 적어줘야 다운로드가 됨.
+    <p><strong>첨부파일:</strong> <a th:href="@{'/files/' + ${post.fileName}}" th:text="${post.fileName}"></a>
+    </p>
+</div>
+
+<a href="/"><button>목록으로</button></a>
+</body>
+</html>
