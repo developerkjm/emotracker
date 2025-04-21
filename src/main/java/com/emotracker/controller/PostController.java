@@ -9,6 +9,7 @@ import com.emotracker.util.IpUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +19,8 @@ import java.util.List;
 
 import static com.emotracker.util.IpUtil.getClientIp;
 
-@RestController
+//@RestController
+@Controller
 @RequiredArgsConstructor
 @RequestMapping("/api/posts")
 public class PostController {
@@ -34,6 +36,7 @@ public class PostController {
         return postService.createPost(dto, ip);
     }
     */
+
 
 
     // file 넣으므로 수정함.
@@ -62,12 +65,18 @@ public class PostController {
     public List<Post> getAllPosts() {
         return postService.getAllPosts();
     }
+    @GetMapping("/community")
+    public String communityList(Model model) {
+        List<Post> postList = postService.getAllPosts();
+
+        model.addAttribute("activePage", "community");
+        model.addAttribute("postList", postList);
+        return "community";
+    }
 
     @GetMapping("/{id}")
     public PostResponseDto getPostById(@PathVariable Long id) {
         System.out.println("id 안들어옴?? " + "{id}");
         return postService.getPostById(id);
     }
-
-
 }

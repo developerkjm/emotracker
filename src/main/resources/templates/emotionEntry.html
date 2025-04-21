@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Emotion Entry</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background: #fefaf6;
+          color: #333;
+          padding: 40px;
+          max-width: 600px;
+          margin: auto;
+        }
+        nav {
+          display: flex;
+          gap: 20px;
+          margin-bottom: 30px;
+          border-bottom: 2px solid #ddd;
+          padding-bottom: 10px;
+        }
+        nav a {
+          text-decoration: none;
+          color: #333;
+          font-weight: bold;
+        }
+        nav a.active {
+          border-bottom: 2px solid #3b82f6;
+          color: #3b82f6;
+        }
+        .emotions {
+          display: flex;
+          gap: 10px;
+          font-size: 24px;
+          margin: 10px 0;
+        }
+        .emotions span {
+          cursor: pointer;
+          padding: 5px;
+          border-radius: 50%;
+          transition: 0.2s;
+        }
+        .emotions span.selected {
+          background-color: #dbeafe;
+        }
+        textarea {
+          width: 100%;
+          height: 100px;
+          margin-top: 10px;
+          padding: 10px;
+          font-size: 16px;
+        }
+        button {
+          margin-top: 20px;
+          width: 100%;
+          padding: 12px;
+          background-color: #93c5fd;
+          border: none;
+          font-size: 16px;
+          color: white;
+          cursor: pointer;
+          border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 메뉴바 -->
+<div th:replace="fragments/header :: header"></div>
+
+<h2>Emotion Entry</h2>
+
+<form th:action="@{/entry}" method="post" th:object="${emotionEntryDto}">
+    <label for="date">Date</label><br>
+    <input type="date" id="date" th:field="*{date}" required><br>
+
+    <label for="emotion">Emotion</label>
+    <!-- 여기에 클릭한 이모지를 감정으로 저장 -->
+    <div class="emotions" id="emotionChoices">
+        <span>😊</span><span>😭</span><span>😌</span><span>😐</span>
+        <span>😠</span><span>😡</span><span>❤️</span><span>😶</span>
+    </div>
+    <!-- 감정 저장용 숨은 필드 -->
+    <input type="hidden" th:field="*{emotion}" id="emotion">
+
+    <label for="memo">Memo</label>
+    <textarea id="memo" th:field="*{memo}" placeholder="Add a note..."></textarea>
+
+    <button type="submit">Save</button>
+</form>
+
+<script>
+    // 날짜 기본값 오늘로
+    document.getElementById('date').valueAsDate = new Date();
+
+    const emotionInput = document.getElementById('emotion');
+    const emotionSpans = document.querySelectorAll('#emotionChoices span');
+
+    emotionSpans.forEach(span => {
+        span.addEventListener('click', () => {
+            // 모든 선택 제거
+            emotionSpans.forEach(s => s.classList.remove('selected'));
+            // 현재 선택 표시
+            span.classList.add('selected');
+            // 숨은 input에 값 설정
+            emotionInput.value = span.textContent;
+        });
+    });
+</script>
+
+</body>
+</html>

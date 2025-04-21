@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Emotion Calendar</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- FullCalendar -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    <style>
+        #calendar {
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 메뉴 -->
+    <div th:replace="fragments/header :: header"></div>
+
+    <h2 style="text-align:center;">Emotion Calendar</h2>
+    <div id="calendar"></div>
+
+    <!-- 모달 -->
+    <div id="emotionModal" style="display:none; position:fixed; top:30%; left:50%; transform:translateX(-50%);
+ background:white; border-radius:10px; padding:20px; box-shadow:0 2px 10px rgba(0,0,0,0.3); z-index:999;">
+        <h3 style="font-size:20px;">감정 선택</h3>
+        <div id="emojiChoices" style="font-size:28px; margin-bottom:10px;">
+            <span onclick="selectEmoji(this)">😊</span>
+            <span onclick="selectEmoji(this)">😭</span>
+            <span onclick="selectEmoji(this)">😌</span>
+            <span onclick="selectEmoji(this)">😐</span>
+            <span onclick="selectEmoji(this)">😠</span>
+            <span onclick="selectEmoji(this)">😡</span>
+            <span onclick="selectEmoji(this)">❤️</span>
+            <span onclick="selectEmoji(this)">😶</span>
+        </div>
+
+        <input type="text" id="modalEmoji" placeholder="선택한 이모지가 여기에 표시됨" readonly style="font-size:24px; border:none; background-color:#f3f4f6; width:100%; text-align:center; margin-bottom:10px;">
+
+        <p><strong>날짜:</strong> <input type="date" id="modalDate"></p>
+
+        <p><strong>메모:</strong></p>
+        <textarea id="modalMemo" style="width:100%; height:80px;"></textarea>
+
+        <div style="text-align:right;">
+            <button id="submitButton" onclick="">등록</button>
+            <button onclick="closeModal()">닫기</button>
+        </div>
+    </div>
+
+
+    <!-- 모달 배경 오버레이 -->
+    <div id="modalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+ background-color:rgba(0,0,0,0.5); z-index:998;" onclick="closeModal()"></div>
+
+    <script>
+        let currentEditId = null;
+        let isEditMode = false;
+
+        function selectEmoji(span) {
+          const selectedEmoji = span.textContent;
+          document.getElementById('modalEmoji').value = selectedEmoji;
+
+          // 선택한 것만 하이라이트
+          document.querySelectorAll('#emojiChoices span').forEach(s => s.style.backgroundColor = '');
+          span.style.backgroundColor = '#dbeafe'; // 연한 파랑색
+        }
+
+
+        function openModal(mode, date = null, event = null) {
+          isEditMode = mode === 'edit';
+
+          const titleInput = document.getElementById('modalEmoji');
+          const dateInput = document.getElementById('modalDate');
+          const memoInput = document.getElementById('modalMemo');
+          const button = document.getElementById('submitButton');
+
+          if (isEditMode && event) {
+            currentEditId = event.id;
+            titleInput.value = event.title;
+            dateInput.value = event.startStr;
+            memoInput.value = event.extendedProps.memo || '';
+            button.innerText = '수정';
+            button.onclick = submitEdit;
+          } else {
+            currentEditId = null;
+            titleInput.value = '';
+            dateInput.value = date;
+            memoInput.value = '';
+            button.innerText = '등록';
+            button.onclick = submitNewEmotion;
+          }
+
+          document.getElementById('emotionModal').style.display = 'block';
+          document.getElementById('modalOverlay').style.display = 'block';
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+          const calendarEl = document.getElementById('calendar');
+
+          const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'ko',
+            height: 'auto',
+            events: async function(fetchInfo, successCallback, failureCallback) {
+              try {
+                const res = await fetch('/api/emotion-entries');
+                const data = await res.json();
+                console.log('data #^&$^%$   :  ' + data);
+                data.forEach(e => {
+                  console.log('emoji:', e.title, 'date:', e.start, 'memo:', e.memo);
+                });
+
+                // 이벤트 포맷: title + start + memo를 tooltip처럼 사용
+                const events = data.map(entry => ({
+                  id: entry.id,             // ✅ 이게 있어야 수정 요청 보낼 수 있어
+                  title: entry.title,     // ✅ 이모지 들어갈 곳
+                  start: entry.start,      // ✅ 날짜
+                  extendedProps: {
+                    memo: entry.memo      // ✅ 툴팁으로 보여줄 메모
+                  }
+                }));
+
+                successCallback(events);
+              } catch (err) {
+                console.error('Failed to load emotion data:', err);
+                failureCallback(err);
+              }
+            },
+            eventDidMount: function(info) {
+              // 툴팁으로 memo 보여주기
+              const memo = info.event.extendedProps.memo;
+              if (memo) {
+                const tooltip = document.createElement('div');
+                tooltip.innerText = memo;
+                tooltip.style.position = 'absolute';
+                tooltip.style.padding = '5px 10px';
+                tooltip.style.background = '#333';
+                tooltip.style.color = '#fff';
+                tooltip.style.fontSize = '12px';
+                tooltip.style.borderRadius = '4px';
+                tooltip.style.pointerEvents = 'none';
+                tooltip.style.display = 'none';
+                document.body.appendChild(tooltip);
+
+                info.el.addEventListener('mouseenter', e => {
+                  tooltip.style.left = e.pageX + 10 + 'px';
+                  tooltip.style.top = e.pageY + 'px';
+                  tooltip.style.display = 'block';
+                });
+                info.el.addEventListener('mousemove', e => {
+                  tooltip.style.left = e.pageX + 10 + 'px';
+                  tooltip.style.top = e.pageY + 'px';
+                });
+                info.el.addEventListener('mouseleave', () => {
+                  tooltip.style.display = 'none';
+                });
+              }
+            },
+            eventClick: function(info) {
+                openModal('edit', null, info.event);
+            },
+            dateClick: function(info) {
+              openModal('create', info.dateStr);
+            }
+
+          });
+
+          calendar.render();
+        });
+        function closeModal() {
+          document.getElementById('emotionModal').style.display = 'none';
+          document.getElementById('modalOverlay').style.display = 'none';
+        }
+        function openEditForm() {
+          document.getElementById('editForm').style.display = 'block';
+
+          // 기존 내용 넣기
+          document.getElementById('editEmoji').value = document.getElementById('modalEmoji').innerText;
+          document.getElementById('editDate').value = document.getElementById('modalDate').innerText;
+          document.getElementById('editMemo').value = document.getElementById('modalMemo').innerText;
+        }
+
+
+        async function submitEdit() {
+          const emoji = document.getElementById('modalEmoji').value;
+          const date = document.getElementById('modalDate').value;
+          const memo = document.getElementById('modalMemo').value;
+
+          if (!currentEditId) {
+            alert("수정할 감정 ID가 없습니다.");
+            return;
+          }
+
+          const body = {
+            emotion: emoji,
+            date: date,
+            memo: memo
+          };
+
+          const response = await fetch(`/api/emotion-entries/${currentEditId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+
+          if (response.ok) {
+            alert("수정 완료!");
+            closeModal();
+            location.reload();
+          } else {
+            alert("수정 실패 ㅠㅠ");
+          }
+        }
+        async function submitNewEmotion() {
+          const emoji = document.getElementById('modalEmoji').value;
+          const date = document.getElementById('modalDate').value;
+          const memo = document.getElementById('modalMemo').value;
+
+          const body = { emotion: emoji, date: date, memo: memo };
+
+          const response = await fetch('/api/emotion-entries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+
+          if (response.ok) {
+            alert('등록 완료!');
+            closeModal();
+            location.reload(); // 또는 FullCalendar에서 refetchEvents() 호출해도 됨
+          } else {
+            alert('등록 실패 ㅠㅠ');
+          }
+        }
+
+    </script>
+
+</body>
+</html>

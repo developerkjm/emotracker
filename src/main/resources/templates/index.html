@@ -1,30 +1,35 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
     <meta charset="UTF-8">
-    <title>감정일기 게시판</title>
+    <title>index</title>
 </head>
 <body>
-<h1>감정일기</h1>
-<table border="1">
-    <tr>
-        <th>번호...</th>
-        <th>제목</th>
-        <th>작성자</th>
-        <th>작성일</th>
-    </tr>
+    <!-- 공통 헤더 include -->
+    <!-- index.html 예시 -->
+    <div th:replace="fragments/header :: header"></div>
+    <h1>HOME</h1>
+    <table border="1">
+        <tr>
+            <th>번호...</th>
+            <th>제목</th>
+            <th>작성자</th>
+            <th>작성일</th>
+        </tr>
 
-    <tr th:each="post : ${postList}">
-        <td th:text="${post.id}">1</td>
-        <td>
-            <a th:href="@{'/posts/' + ${post.id}}" th:text="${post.title}">제목</a>
-        </td>
-        <td th:text="${post.author}">익명</td>
-        <td th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
-    </tr>
+        <tr th:each="post : ${postList}">
+            <td th:text="${post.id}">1</td>
+            <td>
+                <a th:href="@{'/posts/' + ${post.id}}" th:text="${post.title}">제목</a>
+            </td>
+            <td th:text="${post.author}">익명</td>
+            <td th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
+        </tr>
 
-    <a href="/posts/write"><button>글쓰기</button></a>
+        <a href="/posts/write"><button>글쓰기</button></a>
 
-</table>
+    </table>
 </body>
 </html>
