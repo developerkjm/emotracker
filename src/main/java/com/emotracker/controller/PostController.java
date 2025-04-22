@@ -79,4 +79,31 @@ public class PostController {
         System.out.println("id 안들어옴?? " + "{id}");
         return postService.getPostById(id);
     }
+
+    @GetMapping("/{id}/edit")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        PostResponseDto post = postService.getPostById(id);
+        model.addAttribute("post", post);
+        return "edit";
+    }
+
+    @PostMapping("/{id}/update")
+    public String updatePost(
+            @PathVariable Long id,
+            @RequestParam String title,
+            @RequestParam String content,
+            @RequestParam String writer
+    ) {
+        postService.updatePost(id, title, content, writer);
+        return "redirect:/posts/" + id;
+    }
+
+    @PostMapping("/{id}/delete")
+    public String deletePost(@PathVariable Long id) {
+        postService.deletePost(id);
+        return "redirect:/api/posts/community";
+    }
+
+
+
 }

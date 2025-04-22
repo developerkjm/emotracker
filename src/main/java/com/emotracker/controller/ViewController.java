@@ -29,6 +29,8 @@ public class ViewController {
     @GetMapping("/")
     public String index(Model model) {
         List<Post> postList = postService.getAllPosts();
+
+        model.addAttribute("activePage", "home");
         model.addAttribute("postList", postList);
         return "index"; // templates/index.html
     }
@@ -37,6 +39,7 @@ public class ViewController {
     public String showCreateForm() {
         return "create"; // templates/create.html
     }
+
 
     @PostMapping("/posts/create")
     public String handleCreate(
@@ -58,16 +61,17 @@ public class ViewController {
         }
 
         PostRequestDto dto = new PostRequestDto(title, content, writer);
-        postService.createPost(dto, ip, fileName);
+        Long newPostId = postService.createPost(dto, ip, fileName);
 
-        return "redirect:/";
+        return "redirect:/posts/" + newPostId; // ✅ 작성 완료 → 해당 글 상세 페이지로 이동!
     }
+
 
     @GetMapping("/posts/{id}")
     public String showDetail(@PathVariable Long id, Model model) {
         PostResponseDto post = postService.getPostById(id);
 
-
+        model.addAttribute("activePage", "community");
         model.addAttribute("post", post);
         return "detail";
     }

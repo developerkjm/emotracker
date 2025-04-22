@@ -3,34 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <title>게시글 상세보기</title>
+
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/page.css}">
 </head>
 <body>
-    <h1>📄 게시글 상세</h1>
+    <!-- 공통 메뉴 -->
+    <div th:replace="fragments/header :: header"></div>
 
-    <p><strong>제목:</strong> <span th:text="${post.title}"></span></p>
-    <p><strong>내용:</strong> <span th:text="${post.content}"></span></p>
-    <p><strong>작성자:</strong> <span th:text="${post.writer}"></span></p>
-    <p><strong>작성일:</strong> <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
-    <p><strong>IP:</strong> <span th:text="${post.ipAddress}"></span></p>
+    <div class="comm_container">
+        <h2 class="page-title">📄 게시글 상세</h2>
+        <div class="post-header">
+            <h2 th:text="${post.title}" class="post-title"></h2>
 
-    <div th:if="${post.fileName != null}">
-        <p><strong>첨부파일:</strong> <a th:href="@{'/uploads/' + ${post.fileName}}" th:text="${post.fileName}"></a></p>
-        -> 실제 서버 주서를 적어줘야 다운로드가 됨.
-        <p><strong>첨부파일:</strong> <a th:href="@{'/files/' + ${post.fileName}}" th:text="${post.fileName}"></a>
-        </p>
+            <div class="post-meta">
+                <span th:text="${post.writer}">익명</span>
+                (<span th:text="${post.ipAddress}">000.000</span>)
+                |
+                <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">2025-04-22</span>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="post-body">
+            <p th:text="${post.content}" class="post-content"></p>
+        </div>
+
+
+        <div th:if="${post.fileName != null and (#strings.contains(post.fileName.toLowerCase(), '.jpg')
+                  or #strings.contains(post.fileName.toLowerCase(), '.png')
+                  or #strings.contains(post.fileName.toLowerCase(), '.jpeg')
+                  or #strings.contains(post.fileName.toLowerCase(), '.gif'))}">
+            <img th:src="@{'/files/' + ${post.fileName}}" alt="첨부 이미지" style="max-width:100%; margin-top:10px;">
+        </div>
+        <div class="file-preview-box">
+            <div class="file-preview-item" th:if="${post.fileName != null}">
+                <p>
+                    <strong>첨부파일 다운로드:</strong>
+                    <span th:text="${post.fileName}"></span>
+                    <a th:href="@{'/files/' + ${post.fileName}}" download class="btn-download">이미지 다운로드</a>
+                </p>
+            </div>
+        </div>
+
+
+        <div style="margin-top: 30px;">
+            <a th:href="@{'/api/posts/' + ${post.id} + '/edit'}" class="btn-base btn-edit">수정</a>
+            <form th:action="@{'/api/posts/' + ${post.id} + '/delete'}" method="post" style="display:inline;">
+                <button type="submit" class="btn-base btn-delete" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+            </form>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px; font-size: x-large;">
+            <a href="/api/posts/community" class="btn-go-list">← 목록으로</a>
+        </div>
+
+        <hr>
+
+        <!-- 댓글 영역 -->
+        <div class="comment-section">
+            <h3>💬 댓글</h3>
+            <div id="commentSection"></div>
+
+            <h4>댓글 작성</h4>
+            <input type="text" id="newCommentWriter" placeholder="작성자"><br>
+            <textarea id="newCommentContent" rows="3" cols="60" placeholder="내용을 입력하세요"></textarea><br>
+            <button onclick="submitNewComment()">댓글등록</button>
+        </div>
+        <br>
     </div>
-
-    <a href="/"><button>목록으로</button></a>
-
-    <!-- 댓글 영역 -->
-    <h3>💬 댓글</h3>
-    <div id="commentSection"></div>
-
-    <h4>✏️ 댓글 작성</h4>
-    <textarea id="newCommentContent" rows="3" cols="60" placeholder="내용을 입력하세요"></textarea><br>
-    <input type="text" id="newCommentWriter" placeholder="작성자"><br>
-    <button onclick="submitNewComment()">등록</button>
-    <hr>
 
     <script th:inline="javascript">
         const postId = [[${post.id}]];/* 게시글 id를 여기서 가져와야 함 (예: URL 파싱) */;
@@ -68,8 +110,11 @@
           const div = document.createElement('div');
           div.style.marginLeft = `${depth * 20}px`; // 들여쓰기
 
+          console.log('comment : ' , comment);
+
           // const ipDisplay = userIsAdmin ? comment.ip : comment.ip.replace(/\.\d+$/, '.xxx');
-          const ipDisplay = userIsAdmin  ? comment.ip || 'unknown'  : (comment.ip ? comment.ip.replace(/\.\d+$/, '.xxx') : 'unknown');
+<!--          const ipDisplay = userIsAdmin  ? comment.ip || 'unknown'  : (comment.ip ? comment.ip.replace(/\.\d+$/, '.xxx') : 'unknown');-->
+          const ipDisplay = userIsAdmin  ? comment.maskedIp || 'unknown'  : (comment.maskedIp ? comment.maskedIp.replace(/\.\d+$/, '.xxx') : 'unknown');
 
 
           div.innerHTML = `

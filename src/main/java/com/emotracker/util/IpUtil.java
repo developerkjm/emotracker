@@ -15,12 +15,14 @@ public class IpUtil {
 
     public static String maskIp(String ip) {
         // 예: 192.168.0.25 → 192.168.*.*
-        if (ip == null) return "unknown";
+        String masked_ip = "unknown ip";
+        if (ip == null) masked_ip = "unknown";
         String[] parts = ip.split("\\.");
         if (parts.length == 4) {
-            return parts[0] + "." + parts[1] + ".*.*";
+            masked_ip = parts[0] + "." + parts[1] + ".*.*";
+            // return parts[0] + "." + parts[1] + ".*.*";
         }
-        return "masked";
+        return masked_ip;
     }
 }
 
