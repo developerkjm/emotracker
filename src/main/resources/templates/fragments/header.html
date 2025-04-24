@@ -7,14 +7,34 @@
     <!-- templates/fragments/header.html -->
     <!-- fragments/header.html -->
     <div th:fragment="header">
-        <nav class="navbar">
-            <ul class="nav-menu">
-<!--            <li class="nav-item"><a th:href="@{/"} th:classappend="${activePage == 'home'} ? 'active' : ''">Home</a></li>-->
-                <li class="nav-item"><a th:href="@{/}" th:classappend="${activePage == 'home'} ? 'active' : ''">Home</a></li>
-                <li class="nav-item"><a th:href="@{/calendar}" th:classappend="${activePage == 'calendar'} ? 'active' : ''">Emotion Calendar</a></li>
-<!--                <li class="nav-item"><a th:href="@{/entry}" th:classappend="${activePage == 'entry'} ? 'active' : ''">Emotion Entry</a></li>-->
-                <li class="nav-item"><a th:href="@{/api/posts/community}" th:classappend="${activePage == 'community'} ? 'active' : ''">Emotion Board</a></li>
-            </ul>
+        <nav class="navbar-container">
+            <!-- 좌측 여백 (혹시 필요하면 로고도 가능) -->
+            <div style="width: 120px;"></div>
+            <!-- 가운데 메뉴 -->
+            <div class="nav-center">
+                <ul class="nav-menu">
+    <!--            <li class="nav-item"><a th:href="@{/"} th:classappend="${activePage == 'home'} ? 'active' : ''">Home</a></li>-->
+                    <li class="nav-item"><a th:href="@{/}" th:classappend="${activePage == 'home'} ? 'active' : ''">Home</a></li>
+                    <li class="nav-item"><a th:href="@{/calendar}" th:classappend="${activePage == 'calendar'} ? 'active' : ''">Emotion Calendar</a></li>
+                    <li class="nav-item"><a th:href="@{/pdf1}" th:classappend="${activePage == 'pdf1'} ? 'active' : ''">1차 프로젝트</a></li>
+    <!--                <li class="nav-item"><a th:href="@{/entry}" th:classappend="${activePage == 'entry'} ? 'active' : ''">Emotion Entry</a></li>-->
+                    <li class="nav-item"><a th:href="@{/api/posts/community}" th:classappend="${activePage == 'community'} ? 'active' : ''">Emotion Board</a></li>
+                </ul>
+            </div>
+            <!-- 우측 사용자 영역 -->
+            <div class="user-area">
+                <!-- 로그인 안했을 때 -->
+                <div th:if="${#authentication.name == 'anonymousUser'}">
+                    <a th:href="@{/signup}">회원가입</a> |
+                    <a th:href="@{/login}">로그인</a>
+                </div>
+
+                <!-- 로그인 했을 때 -->
+                <div th:if="${#authentication.name != 'anonymousUser'}">
+                    <span th:text="${#authentication.name}">사용자</span>님 |
+                    <a th:href="@{/logout}">로그아웃</a>
+                </div>
+            </div>
         </nav>
     </div>
 

@@ -1,6 +1,7 @@
 package com.emotracker.controller;
 
 import com.emotracker.domain.Post;
+import com.emotracker.domain.User;
 import com.emotracker.dto.PostRequestDto;
 import com.emotracker.dto.PostResponseDto;
 import com.emotracker.service.FileService;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -25,6 +27,7 @@ public class ViewController {
 
     private final PostService postService;
     private final FileService fileService;
+
 
     @GetMapping("/")
     public String index(Model model) {
@@ -35,8 +38,17 @@ public class ViewController {
         return "index"; // templates/index.html
     }
 
+    @GetMapping("/pdf1")
+    public String pdf1(Model model) {
+        model.addAttribute("activePage", "pdf1");
+        return "pdf1";
+    }
+
     @GetMapping("/posts/write")
-    public String showCreateForm() {
+    public String showCreateForm(Principal principal) {
+        if (principal == null) {
+            return "redirect:/login";
+        }
         return "create"; // templates/create.html
     }
 

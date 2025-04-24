@@ -1,15 +1,18 @@
 package com.emotracker.service;
 
 import com.emotracker.domain.User;
-import com.emotracker.dto.UserLoginRequestDto;
-import com.emotracker.dto.UserRequestDto;
-import com.emotracker.dto.UserResponseDto;
-import com.emotracker.dto.UserSignupRequestDto;
+import com.emotracker.dto.*;
 import com.emotracker.repository.UserRepository;
 import com.emotracker.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -17,8 +20,34 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
+
+    //회원가입
+    public void register(UserRegisterDto dto) {
+        if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
+        }
+
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setEmail(dto.getEmail());
+        user.setNickname(dto.getNickname());
+        user.setRole("USER");
+
+        userRepository.save(user);
+
+        // ✅ 자동 로그인 처리
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(
+                        user.getUsername(),
+                        null,
+                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
+                );
+
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+    }
 
     public User saveUser(UserRequestDto userRequestDto) {
         // 1. 비밀번호 암호화 (여기서는 간단히 진행할 수 있음)

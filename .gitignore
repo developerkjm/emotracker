@@ -1,43 +1,26 @@
-HELP.md
+# Java
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+build/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+# IDE
+.idea/
 *.iml
 *.ipr
+*.iws
+.classpath
+.project
+.settings/
+.factorypath
+.springBeans
+.sts4-cache
+.vscode/
 
-### NetBeans ###
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-# Maven
-target/
-
-# IntelliJ
-.idea/
-*.iml
 
 # Logs
 *.log
@@ -46,5 +29,22 @@ target/
 .DS_Store
 Thumbs.db
 
-# YML secrets
+# Maven Wrapper
+.mvn/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Env & Secrets
 application.yml
+application.properties
+.env
+*.env
+
+# Test / Coverage
+test-output/
+coverage/
+jacoco.exec
+
+# Others
+*~
+**/.keep
+HELP.md

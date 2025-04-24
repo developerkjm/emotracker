@@ -11,8 +11,8 @@
 <!-- 상단 메뉴 -->
 <div th:replace="fragments/header :: header"></div>
 
-<div class="container">
-    <h2 class="page-title">📝 게시글 작성</h2>
+<div class="comm_container">
+    <h2 class="page-title">게시글 작성</h2>
 
     <form th:action="@{/posts/create}" method="post" enctype="multipart/form-data" class="form-box">
         <div class="form-group">
@@ -34,8 +34,9 @@
             <label for="file">파일 첨부</label>
             <input type="file" id="file" name="file">
         </div>
-
-        <button type="submit" class="btn">작성 완료</button>
+        <div th:if="${#authorization.expression('isAuthenticated()')}">
+            <button type="submit" class="btn">작성 완료</button>
+        </div>
     </form>
 </div>
 
