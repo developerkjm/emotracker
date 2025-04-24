@@ -44,6 +44,12 @@ public class ViewController {
         return "pdf1";
     }
 
+    @GetMapping("/aboutMe")
+    public String aboutMe(Model model) {
+        model.addAttribute("activePage", "aboutMe");
+        return "aboutMe";
+    }
+
     @GetMapping("/posts/write")
     public String showCreateForm(Principal principal) {
         if (principal == null) {

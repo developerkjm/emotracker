@@ -26,8 +26,9 @@
 
             <label for="nickname">닉네임</label>
             <input type="text" id="nickname" name="nickname" required>
-
-            <button type="submit">회원가입</button>
+            <div  style="margin-top: 30px;" th:if="${#authorization.expression('isAuthenticated()')}">
+                <button type="submit">회원가입</button>
+            </div>
         </form>
         <br>
     </div>

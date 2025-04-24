@@ -22,11 +22,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
 //                        .requestMatchers("/api/emotions/**", "/api/users/**",  "/api/posts", "/api/posts/**" , "/api/comments/**" , "/api/files/**").permitAll() // 해당 경로는 인증 없이 접근 가능
 //                        .requestMatchers("/**").permitAll() // 해당 경로는 인증 없이 접근 가능
-                        .requestMatchers("/", "/login", "/calendar", "/pdf1", "/api/posts/community", "/signup", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/", "/login", "/aboutMe", "/calendar", "/pdf1", "/api/posts/community", "/signup", "/css/**", "/js/**").permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/api/emotion-entries").permitAll() // ✅ 요거 추가!
                         .requestMatchers("/api/emotion-entries/**").authenticated() // ✅ POST, PUT, DELETE 등은 여전히 인증 필요
 
-                        .anyRequest().permitAll() // 그 외의 요청은 인증이 필요함
+                        .requestMatchers("/files/**").permitAll()
+
+                        .requestMatchers(  "/posts/{id:[\\d]+}" ).permitAll()   // 👈 조회만 전부 허용
+                        .requestMatchers(HttpMethod.GET, "/api/comments" ).permitAll()   // 👈 조회만 전부 허용
+                        .requestMatchers("/api/comments/**" ).authenticated()   // 👈 조회만 전부 허용
+
+
+                        .anyRequest().authenticated() // 그 외의 요청은 인증이 필요함
                 )
                 .formLogin(form -> form
                         .loginPage("/login")              // GET /login 은 login.html 연결됨

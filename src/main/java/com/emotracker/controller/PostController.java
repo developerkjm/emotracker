@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.emotracker.util.IpUtil.getClientIp;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 //@RestController
 @Controller
@@ -27,15 +28,6 @@ public class PostController {
 
     private final PostService postService;
     private final FileService fileService;
-
-    /* file 넣기 전
-    @PostMapping("/posts")
-    public PostResponseDto createPost(@RequestBody PostRequestDto dto,
-                                      HttpServletRequest request) {
-        String ip = IpUtil.getClientIp(request); // IP 추출
-        return postService.createPost(dto, ip);
-    }
-    */
 
 
 
@@ -76,8 +68,7 @@ public class PostController {
 
     @GetMapping("/{id}")
     public PostResponseDto getPostById(@PathVariable Long id) {
-        System.out.println("id 안들어옴?? " + "{id}");
-        return postService.getPostById(id);
+    return postService.getPostById(id);
     }
 
     @GetMapping("/{id}/edit")
@@ -99,9 +90,20 @@ public class PostController {
     }
 
     @PostMapping("/{id}/delete")
-    public String deletePost(@PathVariable Long id) {
+//    public String deletePost(@PathVariable Long id) {
+    public String deletePost(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+
+        /*
         postService.deletePost(id);
         return "redirect:/api/posts/community";
+         */
+        try {
+            postService.deletePost(id);
+            return "redirect:/api/posts/community";
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/posts/" + id;  // 다시 상세보기로 리다이렉트
+        }
     }
 
 

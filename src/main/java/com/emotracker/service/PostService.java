@@ -89,7 +89,11 @@ public class PostService {
 
     @Transactional
     public void deletePost(Long postId) {
-        commentRepository.deleteByPostId(postId); // 댓글 먼저 삭제
+        // commentRepository.deleteByPostId(postId); // 댓글 먼저 삭제
+        boolean hasComment = commentRepository.existsByPostId(postId);
+        if (hasComment) {
+            throw new IllegalStateException("댓글이 있는 게시글은 삭제할 수 없습니다.");
+        }
         postRepository.deleteById(postId);        // 그 다음 게시글 삭제
     }
 

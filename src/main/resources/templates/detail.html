@@ -10,167 +10,159 @@
 <body>
     <!-- 공통 메뉴 -->
     <div th:replace="fragments/header :: header"></div>
+    <script th:inline="javascript">
+        const isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
+    </script>
+
 
     <div class="comm_container">
-        <h2 class="page-title">게시글 상세</h2>
-        <div class="post-header">
-            <h2 th:text="${post.title}" class="post-title"></h2>
+          <h2 class="page-title">게시글 상세</h2>
+          <div class="post-header">
+              <h2 th:text="${post.title}" class="post-title"></h2>
 
-            <div class="post-meta">
-                <span th:text="${post.writer}">익명</span>
-                (<span th:text="${post.ipAddress}">000.000</span>)
-                |
-                <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">2025-04-22</span>
-            </div>
-        </div>
+              <div class="post-meta">
+                  <span th:text="${post.writer}">익명</span>
+                  (<span th:text="${post.ipAddress}">000.000</span>)
+                  |
+                  <span th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">2025-04-22</span>
+              </div>
+          </div>
 
-        <hr>
+          <hr>
 
-        <div class="post-body">
-            <p th:text="${post.content}" class="post-content"></p>
-        </div>
-
-
-        <div th:if="${post.fileName != null and (#strings.contains(post.fileName.toLowerCase(), '.jpg')
-                  or #strings.contains(post.fileName.toLowerCase(), '.png')
-                  or #strings.contains(post.fileName.toLowerCase(), '.jpeg')
-                  or #strings.contains(post.fileName.toLowerCase(), '.gif'))}">
-            <img th:src="@{'/files/' + ${post.fileName}}" alt="첨부 이미지" style="max-width:100%; margin-top:10px;">
-        </div>
-        <div class="file-preview-box">
-            <div class="file-preview-item" th:if="${post.fileName != null}">
-                <p>
-                    <strong>첨부파일 다운로드:</strong>
-                    <span th:text="${post.fileName}"></span>
-                    <a th:href="@{'/files/' + ${post.fileName}}" download class="btn-download">이미지 다운로드</a>
-                </p>
-            </div>
-        </div>
+          <div class="post-body">
+              <p th:text="${post.content}" class="post-content"></p>
+          </div>
 
 
-        <div style="margin-top: 30px;">
-            <a th:href="@{'/api/posts/' + ${post.id} + '/edit'}" class="btn-base btn-edit">수정</a>
-            <form th:action="@{'/api/posts/' + ${post.id} + '/delete'}" method="post" style="display:inline;">
-                <button type="submit" class="btn-base btn-delete" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
-            </form>
-        </div>
+          <div th:if="${post.fileName != null and (#strings.contains(post.fileName.toLowerCase(), '.jpg')
+                    or #strings.contains(post.fileName.toLowerCase(), '.png')
+                    or #strings.contains(post.fileName.toLowerCase(), '.jpeg')
+                    or #strings.contains(post.fileName.toLowerCase(), '.gif'))}">
+              <img th:src="@{'/files/' + ${post.fileName}}" alt="첨부 이미지" style="max-width:100%; margin-top:10px;">
+          </div>
+          <div class="file-preview-box">
+              <div class="file-preview-item" th:if="${post.fileName != null}">
+                  <p>
+                      <strong>첨부파일 다운로드:</strong>
+                      <span th:text="${post.fileName}"></span>
+                      <a th:href="@{'/files/' + ${post.fileName}}" download class="btn-download">이미지 다운로드</a>
+                  </p>
+              </div>
+          </div>
 
-        <div style="text-align: center; margin-top: 20px; font-size: x-large;">
-            <a href="/api/posts/community" class="btn-go-list">← 목록으로</a>
-        </div>
 
-        <hr>
+          <!-- 수정/삭제 버튼: 로그인한 사용자만 -->
+          <div  style="margin-top: 30px;" th:if="${#authorization.expression('isAuthenticated()')}">
+              <a th:href="@{'/api/posts/' + ${post.id} + '/edit'}" class="btn-base btn-edit">수정</a>
+              <form th:action="@{'/api/posts/' + ${post.id} + '/delete'}" method="post"  style="display:inline;">
+                  <button type="submit" class="btn-base btn-delete" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+              </form>
+          </div>
 
-        <!-- 댓글 영역 -->
-        <div class="comment-section">
-            <h3>💬 댓글</h3>
-            <div id="commentSection"></div>
 
-            <h4>댓글 작성</h4>
-            <input type="text" id="newCommentWriter" placeholder="작성자"><br>
-            <textarea id="newCommentContent" rows="3" cols="60" placeholder="내용을 입력하세요"></textarea><br>
-            <button onclick="submitNewComment()">댓글등록</button>
-        </div>
-        <br>
-    </div>
+          <div style="text-align: center; margin-top: 20px; font-size: x-large;">
+              <a href="/api/posts/community" class="btn-go-list">← 목록으로</a>
+          </div>
 
-    <script th:inline="javascript">
-        const postId = [[${post.id}]];/* 게시글 id를 여기서 가져와야 함 (예: URL 파싱) */;
-        console.log('postId?? ' + postId);
-        const userIsAdmin = false; // 나중에 로그인 시스템 연동되면 바꿔야 함
+          <hr>
 
-        // 댓글 불러오기
-        async function loadComments() {
-          const response = await fetch(`/api/comments?postId=${postId}`);
-          const comments = await response.json();
+          <!-- 댓글 영역 -->
+          <div class="comment-section">
+              <h3>💬 댓글</h3>
+              <div id="commentSection"></div>
 
-          const container = document.getElementById('commentSection');
-          container.innerHTML = ''; // 초기화
+              <div  style="margin-top: 30px;" th:if="${#authorization.expression('isAuthenticated()')}">
+                  <h4>댓글 작성</h4>
+                  <input type="text" id="newCommentWriter" placeholder="작성자"><br>
+                  <textarea id="newCommentContent" rows="3" cols="60" placeholder="내용을 입력하세요"></textarea><br>
+                  <button onclick="submitNewComment()">댓글등록</button>
+              </div>
+          </div>
+          <br>
+      </div>
 
-          // 댓글 트리 구조로 구성
-          const commentMap = {};
-          comments.forEach(c => {
-            commentMap[c.id] = { ...c, children: [] };
-          });
-          const rootComments = [];
+      <script th:inline="javascript">
+          const postId = [[${post.id}]];/* 게시글 id를 여기서 가져와야 함 (예: URL 파싱) */;
+          console.log('postId?? ' + postId);
+          const userIsAdmin = false; // 나중에 로그인 시스템 연동되면 바꿔야 함
 
-          comments.forEach(c => {
-            if (c.parentId) {
-              commentMap[c.parentId].children.push(commentMap[c.id]);
-            } else {
-              rootComments.push(commentMap[c.id]);
+          // 댓글 불러오기
+          async function loadComments() {
+            const response = await fetch(`/api/comments?postId=${postId}`);
+            const comments = await response.json();
+
+            const container = document.getElementById('commentSection');
+            container.innerHTML = ''; // 초기화
+
+            // 댓글 트리 구조로 구성
+            const commentMap = {};
+            comments.forEach(c => {
+              commentMap[c.id] = { ...c, children: [] };
+            });
+            const rootComments = [];
+
+            comments.forEach(c => {
+              if (c.parentId) {
+                commentMap[c.parentId].children.push(commentMap[c.id]);
+              } else {
+                rootComments.push(commentMap[c.id]);
+              }
+            });
+
+            rootComments.forEach(c => renderComment(c, container));
+          }
+
+          // 댓글 렌더링 함수
+          function renderComment(comment, container, depth = 0) {
+            const div = document.createElement('div');
+            div.style.marginLeft = `${depth * 20}px`; // 들여쓰기
+
+            console.log('comment : ', comment);
+
+            const ipDisplay = userIsAdmin
+              ? comment.maskedIp || 'unknown'
+              : (comment.maskedIp ? comment.maskedIp.replace(/\.\d+$/, '.xxx') : 'unknown');
+
+            let buttonHtml = '';
+            if (isAuthenticated) {
+              buttonHtml = `
+                <button onclick="showReplyForm(${comment.id})">답글</button>
+                <button onclick="showEditForm(${comment.id}, '${comment.content.replace(/'/g, "\\'")}')">수정</button>
+                <button onclick="deleteComment(${comment.id})">삭제</button>
+                <div id="replyForm-${comment.id}"></div>
+                <div id="editForm-${comment.id}"></div>
+              `;
             }
-          });
 
-          rootComments.forEach(c => renderComment(c, container));
-        }
+            div.innerHTML = `
+              <div style="border-bottom:1px solid #ccc; padding:5px 0;">
+                <strong>${comment.writer}</strong> (${ipDisplay}) - ${new Date(comment.createdAt).toLocaleString()}<br>
+                <span id="comment-content-${comment.id}">${comment.content}</span>
+                ${buttonHtml}
+              </div>
+            `;
 
-        // 댓글 렌더링 함수
-        function renderComment(comment, container, depth = 0) {
-          const div = document.createElement('div');
-          div.style.marginLeft = `${depth * 20}px`; // 들여쓰기
+            container.appendChild(div);
 
-          console.log('comment : ' , comment);
-
-          // const ipDisplay = userIsAdmin ? comment.ip : comment.ip.replace(/\.\d+$/, '.xxx');
-<!--          const ipDisplay = userIsAdmin  ? comment.ip || 'unknown'  : (comment.ip ? comment.ip.replace(/\.\d+$/, '.xxx') : 'unknown');-->
-          const ipDisplay = userIsAdmin  ? comment.maskedIp || 'unknown'  : (comment.maskedIp ? comment.maskedIp.replace(/\.\d+$/, '.xxx') : 'unknown');
+            comment.children.forEach(child => renderComment(child, container, depth + 1));
+          }
 
 
-          div.innerHTML = `
-            <div style="border-bottom:1px solid #ccc; padding:5px 0;">
-              <strong>${comment.writer}</strong> (${ipDisplay}) - ${new Date(comment.createdAt).toLocaleString()}<br>
-              <span id="comment-content-${comment.id}">${comment.content}</span>
-              <button onclick="showReplyForm(${comment.id})">답글</button>
-              <button onclick="showEditForm(${comment.id}, '${comment.content.replace(/'/g, "\\'")}')">수정</button>
-              <button onclick="deleteComment(${comment.id})">삭제</button>
-              <div id="replyForm-${comment.id}"></div>
-              <div id="editForm-${comment.id}"></div>
-            </div>
-          `;
-          container.appendChild(div);
+          // 대댓글 입력 폼 표시
+          function showReplyForm(parentId) {
+            const replyDiv = document.getElementById(`replyForm-${parentId}`);
+            replyDiv.innerHTML = `
+              <textarea id="replyContent-${parentId}" rows="2" cols="50"></textarea><br>
+              <input type="text" id="replyWriter-${parentId}" placeholder="작성자"/><br>
+              <button onclick="submitReply(${parentId})">등록</button>
+            `;
+          }
 
-          comment.children.forEach(child => renderComment(child, container, depth + 1));
-        }
-
-        // 대댓글 입력 폼 표시
-        function showReplyForm(parentId) {
-          const replyDiv = document.getElementById(`replyForm-${parentId}`);
-          replyDiv.innerHTML = `
-            <textarea id="replyContent-${parentId}" rows="2" cols="50"></textarea><br>
-            <input type="text" id="replyWriter-${parentId}" placeholder="작성자"/><br>
-            <button onclick="submitReply(${parentId})">등록</button>
-          `;
-        }
-
-        // 대댓글 전송
-        async function submitReply(parentId) {
-          const content = document.getElementById(`replyContent-${parentId}`).value;
-          const writer = document.getElementById(`replyWriter-${parentId}`).value;
-
-          await fetch('/api/comments', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              postId: postId,
-              content: content,
-              writer: writer,
-              parentId: parentId
-            })
-          });
-
-          loadComments(); // 다시 불러오기
-        }
-
-        // 최상위 댓글 전송
-        async function submitNewComment() {
-            const content = document.getElementById("newCommentContent").value;
-            const writer = document.getElementById("newCommentWriter").value;
-
-            if (!content.trim() || !writer.trim()) {
-              alert("작성자와 내용을 모두 입력해주세요!");
-              return;
-            }
+          // 대댓글 전송
+          async function submitReply(parentId) {
+            const content = document.getElementById(`replyContent-${parentId}`).value;
+            const writer = document.getElementById(`replyWriter-${parentId}`).value;
 
             await fetch('/api/comments', {
               method: 'POST',
@@ -179,58 +171,82 @@
                 postId: postId,
                 content: content,
                 writer: writer,
-                parentId: null
+                parentId: parentId
               })
             });
 
-            // 입력값 초기화
-            document.getElementById("newCommentContent").value = '';
-            document.getElementById("newCommentWriter").value = '';
-
-            // 댓글 목록 다시 불러오기
-            loadComments();
-        }
-
-        function showEditForm(commentId, originalContent) {
-          const editDiv = document.getElementById(`editForm-${commentId}`);
-          editDiv.innerHTML = `
-            <textarea id="editContent-${commentId}" rows="2" cols="50">${originalContent}</textarea><br>
-            <button onclick="submitEdit(${commentId})">저장</button>
-            <button onclick="cancelEdit(${commentId})">취소</button>
-          `;
-        }
-
-        async function submitEdit(commentId) {
-          const newContent = document.getElementById(`editContent-${commentId}`).value;
-
-          if (!newContent.trim()) {
-            alert("내용을 입력해주세요!");
-            return;
+            loadComments(); // 다시 불러오기
           }
 
-          await fetch(`/api/comments/${commentId}`, {
-            method: 'PUT', // or PATCH
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: newContent })
-          });
+          // 최상위 댓글 전송
+          async function submitNewComment() {
+              const content = document.getElementById("newCommentContent").value;
+              const writer = document.getElementById("newCommentWriter").value;
 
-          loadComments(); // 목록 다시 불러오기
-        }
+              if (!content.trim() || !writer.trim()) {
+                alert("작성자와 내용을 모두 입력해주세요!");
+                return;
+              }
 
-        function cancelEdit(commentId) {
-          const editDiv = document.getElementById(`editForm-${commentId}`);
-          editDiv.innerHTML = '';
-        }
+              await fetch('/api/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  postId: postId,
+                  content: content,
+                  writer: writer,
+                  parentId: null
+                })
+              });
 
-        async function deleteComment(commentId) {
-          if (!confirm("정말 삭제하시겠습니까?")) return;
+              // 입력값 초기화
+              document.getElementById("newCommentContent").value = '';
+              document.getElementById("newCommentWriter").value = '';
 
-          await fetch(`/api/comments/${commentId}`, {
-            method: 'DELETE'
-          });
+              // 댓글 목록 다시 불러오기
+              loadComments();
+          }
 
-          loadComments();
-        }
+          function showEditForm(commentId, originalContent) {
+            const editDiv = document.getElementById(`editForm-${commentId}`);
+            editDiv.innerHTML = `
+              <textarea id="editContent-${commentId}" rows="2" cols="50">${originalContent}</textarea><br>
+              <button onclick="submitEdit(${commentId})">저장</button>
+              <button onclick="cancelEdit(${commentId})">취소</button>
+            `;
+          }
+
+          async function submitEdit(commentId) {
+            const newContent = document.getElementById(`editContent-${commentId}`).value;
+
+            if (!newContent.trim()) {
+              alert("내용을 입력해주세요!");
+              return;
+            }
+
+            await fetch(`/api/comments/${commentId}`, {
+              method: 'PUT', // or PATCH
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content: newContent })
+            });
+
+            loadComments(); // 목록 다시 불러오기
+          }
+
+          function cancelEdit(commentId) {
+            const editDiv = document.getElementById(`editForm-${commentId}`);
+            editDiv.innerHTML = '';
+          }
+
+          async function deleteComment(commentId) {
+            if (!confirm("정말 삭제하시겠습니까?")) return;
+
+            await fetch(`/api/comments/${commentId}`, {
+              method: 'DELETE'
+            });
+
+            loadComments();
+          }
 
 
 
@@ -238,11 +254,17 @@
 
 
 
-        // 페이지 로딩 시 실행
-        window.onload = loadComments;
+          // 페이지 로딩 시 실행
+          window.onload = loadComments;
+    </script>
+    <!-- 페이지 내용 끝 -->
+
+    <!-- alert 메시지 (삭제 실패 등) -->
+    <script th:if="${errorMessage}" th:inline="javascript">
+        alert([[${errorMessage}]]);
     </script>
 
+
+
 </body>
-
-
 </html>
